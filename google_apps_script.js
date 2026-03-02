@@ -31,10 +31,16 @@ function doPost(e) {
       sheet.appendRow([
         "S No.",
         "Timestamp",
+        "Type",
         "Latitude",
         "Longitude",
         "Accuracy",
         "Google Maps Link",
+        "IP Address",
+        "City",
+        "Region",
+        "Country",
+        "ISP",
         "User Agent",
         "Platform",
         "Language",
@@ -43,7 +49,7 @@ function doPost(e) {
       ]);
 
       // Format header row
-      var headerRange = sheet.getRange(1, 1, 1, 11);
+      var headerRange = sheet.getRange(1, 1, 1, 17);
       headerRange.setFontWeight("bold");
       headerRange.setBackground("#1a73e8");
       headerRange.setFontColor("#ffffff");
@@ -60,10 +66,16 @@ function doPost(e) {
     sheet.appendRow([
       serialNo,
       data.timestamp || new Date().toLocaleString(),
+      data.locationType || "Unknown",
       data.latitude || "N/A",
       data.longitude || "N/A",
       data.accuracy || "N/A",
       data.googleMapsLink || "N/A",
+      data.ip || "N/A",
+      data.city || "N/A",
+      data.region || "N/A",
+      data.country || "N/A",
+      data.isp || "N/A",
       data.userAgent || "N/A",
       data.platform || "N/A",
       data.language || "N/A",
@@ -72,7 +84,7 @@ function doPost(e) {
     ]);
 
     // Auto-resize columns for readability
-    sheet.autoResizeColumns(1, 11);
+    sheet.autoResizeColumns(1, 17);
 
     return ContentService
       .createTextOutput(JSON.stringify({ status: "success", message: "Data logged" }))
