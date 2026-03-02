@@ -26,43 +26,78 @@ function doPost(e) {
       sheet = ss.getSheets()[0];
     }
 
-    // Add headers if sheet is empty
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        "S No.",
-        "Timestamp",
-        "Type",
-        "Latitude",
-        "Longitude",
-        "Accuracy",
-        "Google Maps Link",
-        "IP Address",
-        "City",
-        "Region",
-        "Country",
-        "ISP",
-        "User Agent",
-        "Platform",
-        "Language",
-        "Screen Resolution",
-        "Referrer"
-      ]);
+    var expectedHeaders = [
+      "S No.",
+      "Timestamp",
+      "Type",
+      "Latitude",
+      "Longitude",
+      "Accuracy",
+      "Google Maps Link",
+      "IP Address",
+      "City",
+      "Region",
+      "Country",
+      "ISP",
+      "User Agent",
+      "Platform",
+      "Language",
+      "Screen Resolution",
+      "Referrer"
+    ];
 
-      // Format header row
-      var headerRange = sheet.getRange(1, 1, 1, 17);
+    // Add or fix headers
+    var needsHeaders = false;
+    if (sheet.getLastRow() === 0) {
+      needsHeaders = true;
+    } else {
+      // Check if current headers match expected
+      var currentHeader = sheet.getRange(1, 1).getValue();
+      var col3 = sheet.getRange(1, 3).getValue();
+      if (col3 !== "Type") {
+        needsHeaders = true;
+        // Clear old headers row and rewrite
+        sheet.getRange(1, 1, 1, sheet.getLastColumn()).clearContent();
+      }
+    }
+
+    if (needsHeaders) {
+      sheet.getRange(1, 1, 1, expectedHeaders.length).setValues([expectedHeaders]);
+      var headerRange = sheet.getRange(1, 1, 1, expectedHeaders.length);
       headerRange.setFontWeight("bold");
-      headerRange.setBackground("#1a73e8");
-      headerRange.setFontColor("#ffffff");
+      headerRange.setBackground("#0a0a0f");
+      headerRange.setFontColor("#00fff5");
+      headerRange.setFontFamily("Consolas");
+      headerRange.setHorizontalAlignment("center");
+      headerRange.setBorder(true, true, true, true, false, false, "#00fff5", SpreadsheetApp.BorderStyle.SOLID);
       sheet.setFrozenRows(1);
+      sheet.setColumnWidth(1, 50);   // S No.
+      sheet.setColumnWidth(2, 160);  // Timestamp
+      sheet.setColumnWidth(3, 55);   // Type
+      sheet.setColumnWidth(4, 110);  // Latitude
+      sheet.setColumnWidth(5, 110);  // Longitude
+      sheet.setColumnWidth(6, 140);  // Accuracy
+      sheet.setColumnWidth(7, 320);  // Maps Link
+      sheet.setColumnWidth(8, 120);  // IP
+      sheet.setColumnWidth(9, 120);  // City
+      sheet.setColumnWidth(10, 120); // Region
+      sheet.setColumnWidth(11, 100); // Country
+      sheet.setColumnWidth(12, 200); // ISP
+      sheet.setColumnWidth(13, 400); // User Agent
+      sheet.setColumnWidth(14, 100); // Platform
+      sheet.setColumnWidth(15, 80);  // Language
+      sheet.setColumnWidth(16, 120); // Screen Res
+      sheet.setColumnWidth(17, 100); // Referrer
     }
 
     var data = JSON.parse(e.postData.contents);
 
     // Auto-increment S No.
     var lastRow = sheet.getLastRow();
-    var serialNo = lastRow; // Row 1 = header, so row 2 = S No. 1, etc.
+    var serialNo = lastRow; // Row 1 = header, so row 2 = S No. 1
 
     // Append the data row
+    var newRow = lastRow + 1;
     sheet.appendRow([
       serialNo,
       data.timestamp || new Date().toLocaleString(),
@@ -83,8 +118,31 @@ function doPost(e) {
       data.referrer || "N/A"
     ]);
 
-    // Auto-resize columns for readability
-    sheet.autoResizeColumns(1, 17);
+    // Style the new data row
+    var dataRange = sheet.getRange(newRow, 1, 1, 17);
+    dataRange.setFontFamily("Consolas");
+    dataRange.setFontSize(9);
+    dataRange.setVerticalAlignment("middle");
+
+    // Color code the Type column
+    var typeCell = sheet.getRange(newRow, 3);
+    if (data.locationType === "GPS") {
+      typeCell.setBackground("#0d3320");
+      typeCell.setFontColor("#39ff14");
+    } else if (data.locationType === "IP") {
+      typeCell.setBackground("#1a1a3e");
+      typeCell.setFontColor("#00fff5");
+    }
+
+    // Style S No. column
+    sheet.getRange(newRow, 1).setHorizontalAlignment("center");
+
+    // Alternate row shading
+    if (newRow % 2 === 0) {
+      dataRange.setBackground("#0d0d12");
+    } else {
+      dataRange.setBackground("#111118");
+    }
 
     return ContentService
       .createTextOutput(JSON.stringify({ status: "success", message: "Data logged" }))
