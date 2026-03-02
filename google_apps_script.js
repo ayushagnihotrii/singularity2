@@ -43,7 +43,8 @@ function doPost(e) {
       "Platform",
       "Language",
       "Screen Resolution",
-      "Referrer"
+      "Referrer",
+      "Visit ID"
     ];
 
     // Add or fix headers
@@ -89,13 +90,30 @@ function doPost(e) {
       sheet.setColumnWidth(15, 80);  // Language
       sheet.setColumnWidth(16, 130); // Screen Res
       sheet.setColumnWidth(17, 100); // Referrer
+      // Hide Visit ID column (used internally for grouping)
+      sheet.hideColumns(18);
     }
 
     var data = JSON.parse(e.postData.contents);
 
-    // Auto-increment S No.
+    // Auto-increment S No. — same visit ID gets same S No.
     var lastRow = sheet.getLastRow();
-    var serialNo = lastRow; // Row 1 = header, so row 2 = S No. 1
+    var serialNo = 1;
+
+    if (lastRow > 1 && data.visitId) {
+      // Check if previous row has the same visitId
+      // visitId is stored in a hidden column (column 18)
+      var prevVisitId = sheet.getRange(lastRow, 18).getValue();
+      var prevSerialNo = sheet.getRange(lastRow, 1).getValue();
+      
+      if (prevVisitId === data.visitId) {
+        // Same visit — use same serial number
+        serialNo = prevSerialNo;
+      } else {
+        // New visit — increment
+        serialNo = Number(prevSerialNo) + 1;
+      }
+    }
 
     // Append the data row
     var newRow = lastRow + 1;
@@ -116,7 +134,8 @@ function doPost(e) {
       data.platform || "N/A",
       data.language || "N/A",
       data.screenResolution || "N/A",
-      data.referrer || "N/A"
+      data.referrer || "N/A",
+      data.visitId || ""  // Hidden column R for visit ID grouping
     ]);
 
     // Style the new data row
@@ -131,23 +150,44 @@ function doPost(e) {
     typeCell.setFontWeight("bold");
     typeCell.setHorizontalAlignment("center");
     if (data.locationType === "GPS") {
-      typeCell.setBackground("#d4edda");  // light green bg
-      typeCell.setFontColor("#155724");   // dark green text
+      typeCell.setBackground("#d4edda");
+      typeCell.setFontColor("#155724");
     } else if (data.locationType === "IP") {
-      typeCell.setBackground("#cce5ff");  // light blue bg
-      typeCell.setFontColor("#004085");   // dark blue text
+      typeCell.setBackground("#cce5ff");
+      typeCell.setFontColor("#004085");
     }
 
     // Style S No. column
-    sheet.getRange(newRow, 1).setHorizontalAlignment("center");
-    sheet.getRange(newRow, 1).setFontWeight("bold");
+    var snoCell = sheet.getRange(newRow, 1);
+    snoCell.setHorizontalAlignment("center");
+    snoCell.setFontWeight("bold");
+    snoCell.setFontSize(11);
 
-    // Alternate row shading — VISIBLE colors
-    if (newRow % 2 === 0) {
-      dataRange.setBackground("#f0f0f5"); // light grey
-    } else {
-      dataRange.setBackground("#ffffff");  // white
+    // If same visit as previous row, merge S No. cells & dim duplicate
+    if (newRow > 2) {
+      var prevVisitId = sheet.getRange(newRow - 1, 18).getValue();
+      if (prevVisitId === data.visitId) {
+        // Clear S No. from this row (it's a duplicate display)
+        snoCell.setValue("");
+        // Merge S No. cells for this visit
+        try {
+          sheet.getRange(newRow - 1, 1, 2, 1).merge();
+          sheet.getRange(newRow - 1, 1).setVerticalAlignment("middle");
+        } catch(e) {
+          // If already merged or error, skip
+        }
+        // Add a subtle top border to separate from other visits
+        dataRange.setBackground("#f8f9fa");
+      }
     }
+
+    // Alternate visit shading (based on S No.)
+    if (serialNo % 2 === 0 && snoCell.getValue() !== "") {
+      dataRange.setBackground("#f0f0f5");
+    } else if (snoCell.getValue() !== "") {
+      dataRange.setBackground("#ffffff");
+    }
+
     // Re-apply type cell color after row color
     if (data.locationType === "GPS") {
       typeCell.setBackground("#d4edda");
@@ -157,17 +197,17 @@ function doPost(e) {
 
     // Highlight IP address column
     var ipCell = sheet.getRange(newRow, 8);
-    ipCell.setFontColor("#d63384");  // pink
+    ipCell.setFontColor("#d63384");
     ipCell.setFontWeight("bold");
 
     // Highlight City column
     var cityCell = sheet.getRange(newRow, 9);
-    cityCell.setFontColor("#6f42c1"); // purple
+    cityCell.setFontColor("#6f42c1");
     cityCell.setFontWeight("bold");
 
-    // Make Google Maps link blue & underlined
+    // Make Google Maps link blue
     var mapsCell = sheet.getRange(newRow, 7);
-    mapsCell.setFontColor("#0d6efd"); // blue
+    mapsCell.setFontColor("#0d6efd");
 
     return ContentService
       .createTextOutput(JSON.stringify({ status: "success", message: "Data logged" }))

