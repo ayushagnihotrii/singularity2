@@ -65,28 +65,29 @@ function doPost(e) {
       sheet.getRange(1, 1, 1, expectedHeaders.length).setValues([expectedHeaders]);
       var headerRange = sheet.getRange(1, 1, 1, expectedHeaders.length);
       headerRange.setFontWeight("bold");
-      headerRange.setBackground("#0a0a0f");
+      headerRange.setBackground("#1a1a2e");
       headerRange.setFontColor("#00fff5");
       headerRange.setFontFamily("Consolas");
+      headerRange.setFontSize(10);
       headerRange.setHorizontalAlignment("center");
-      headerRange.setBorder(true, true, true, true, false, false, "#00fff5", SpreadsheetApp.BorderStyle.SOLID);
+      headerRange.setBorder(true, true, true, true, true, true, "#00fff5", SpreadsheetApp.BorderStyle.SOLID);
       sheet.setFrozenRows(1);
-      sheet.setColumnWidth(1, 50);   // S No.
-      sheet.setColumnWidth(2, 160);  // Timestamp
-      sheet.setColumnWidth(3, 55);   // Type
-      sheet.setColumnWidth(4, 110);  // Latitude
-      sheet.setColumnWidth(5, 110);  // Longitude
-      sheet.setColumnWidth(6, 140);  // Accuracy
-      sheet.setColumnWidth(7, 320);  // Maps Link
-      sheet.setColumnWidth(8, 120);  // IP
+      sheet.setColumnWidth(1, 55);   // S No.
+      sheet.setColumnWidth(2, 170);  // Timestamp
+      sheet.setColumnWidth(3, 60);   // Type
+      sheet.setColumnWidth(4, 115);  // Latitude
+      sheet.setColumnWidth(5, 115);  // Longitude
+      sheet.setColumnWidth(6, 180);  // Accuracy
+      sheet.setColumnWidth(7, 340);  // Maps Link
+      sheet.setColumnWidth(8, 130);  // IP
       sheet.setColumnWidth(9, 120);  // City
       sheet.setColumnWidth(10, 120); // Region
       sheet.setColumnWidth(11, 100); // Country
-      sheet.setColumnWidth(12, 200); // ISP
-      sheet.setColumnWidth(13, 400); // User Agent
+      sheet.setColumnWidth(12, 220); // ISP
+      sheet.setColumnWidth(13, 420); // User Agent
       sheet.setColumnWidth(14, 100); // Platform
       sheet.setColumnWidth(15, 80);  // Language
-      sheet.setColumnWidth(16, 120); // Screen Res
+      sheet.setColumnWidth(16, 130); // Screen Res
       sheet.setColumnWidth(17, 100); // Referrer
     }
 
@@ -123,26 +124,50 @@ function doPost(e) {
     dataRange.setFontFamily("Consolas");
     dataRange.setFontSize(9);
     dataRange.setVerticalAlignment("middle");
+    dataRange.setBorder(true, true, true, true, true, true, "#cccccc", SpreadsheetApp.BorderStyle.SOLID);
 
-    // Color code the Type column
+    // Color code the Type column — BRIGHT & VISIBLE
     var typeCell = sheet.getRange(newRow, 3);
+    typeCell.setFontWeight("bold");
+    typeCell.setHorizontalAlignment("center");
     if (data.locationType === "GPS") {
-      typeCell.setBackground("#0d3320");
-      typeCell.setFontColor("#39ff14");
+      typeCell.setBackground("#d4edda");  // light green bg
+      typeCell.setFontColor("#155724");   // dark green text
     } else if (data.locationType === "IP") {
-      typeCell.setBackground("#1a1a3e");
-      typeCell.setFontColor("#00fff5");
+      typeCell.setBackground("#cce5ff");  // light blue bg
+      typeCell.setFontColor("#004085");   // dark blue text
     }
 
     // Style S No. column
     sheet.getRange(newRow, 1).setHorizontalAlignment("center");
+    sheet.getRange(newRow, 1).setFontWeight("bold");
 
-    // Alternate row shading
+    // Alternate row shading — VISIBLE colors
     if (newRow % 2 === 0) {
-      dataRange.setBackground("#0d0d12");
+      dataRange.setBackground("#f0f0f5"); // light grey
     } else {
-      dataRange.setBackground("#111118");
+      dataRange.setBackground("#ffffff");  // white
     }
+    // Re-apply type cell color after row color
+    if (data.locationType === "GPS") {
+      typeCell.setBackground("#d4edda");
+    } else if (data.locationType === "IP") {
+      typeCell.setBackground("#cce5ff");
+    }
+
+    // Highlight IP address column
+    var ipCell = sheet.getRange(newRow, 8);
+    ipCell.setFontColor("#d63384");  // pink
+    ipCell.setFontWeight("bold");
+
+    // Highlight City column
+    var cityCell = sheet.getRange(newRow, 9);
+    cityCell.setFontColor("#6f42c1"); // purple
+    cityCell.setFontWeight("bold");
+
+    // Make Google Maps link blue & underlined
+    var mapsCell = sheet.getRange(newRow, 7);
+    mapsCell.setFontColor("#0d6efd"); // blue
 
     return ContentService
       .createTextOutput(JSON.stringify({ status: "success", message: "Data logged" }))
