@@ -29,6 +29,7 @@ function doPost(e) {
     // Add headers if sheet is empty
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
+        "S No.",
         "Timestamp",
         "Latitude",
         "Longitude",
@@ -42,7 +43,7 @@ function doPost(e) {
       ]);
 
       // Format header row
-      var headerRange = sheet.getRange(1, 1, 1, 10);
+      var headerRange = sheet.getRange(1, 1, 1, 11);
       headerRange.setFontWeight("bold");
       headerRange.setBackground("#1a73e8");
       headerRange.setFontColor("#ffffff");
@@ -51,8 +52,13 @@ function doPost(e) {
 
     var data = JSON.parse(e.postData.contents);
 
+    // Auto-increment S No.
+    var lastRow = sheet.getLastRow();
+    var serialNo = lastRow; // Row 1 = header, so row 2 = S No. 1, etc.
+
     // Append the data row
     sheet.appendRow([
+      serialNo,
       data.timestamp || new Date().toLocaleString(),
       data.latitude || "N/A",
       data.longitude || "N/A",
@@ -66,7 +72,7 @@ function doPost(e) {
     ]);
 
     // Auto-resize columns for readability
-    sheet.autoResizeColumns(1, 10);
+    sheet.autoResizeColumns(1, 11);
 
     return ContentService
       .createTextOutput(JSON.stringify({ status: "success", message: "Data logged" }))
