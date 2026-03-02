@@ -101,17 +101,27 @@ function doPost(e) {
     var serialNo = 1;
 
     if (lastRow > 1 && data.visitId) {
-      // Check if previous row has the same visitId
-      // visitId is stored in a hidden column (column 18)
+      // Check if this visit already exists
       var prevVisitId = sheet.getRange(lastRow, 18).getValue();
-      var prevSerialNo = sheet.getRange(lastRow, 1).getValue();
       
       if (prevVisitId === data.visitId) {
-        // Same visit — use same serial number
-        serialNo = prevSerialNo;
+        // Same visit — find the serial number (scan upward if cell is merged/empty)
+        for (var r = lastRow; r >= 2; r--) {
+          var val = sheet.getRange(r, 1).getValue();
+          if (val !== "" && val !== null) {
+            serialNo = Number(val);
+            break;
+          }
+        }
       } else {
-        // New visit — increment
-        serialNo = Number(prevSerialNo) + 1;
+        // New visit — find the highest serial number and increment
+        for (var r = lastRow; r >= 2; r--) {
+          var val = sheet.getRange(r, 1).getValue();
+          if (val !== "" && val !== null) {
+            serialNo = Number(val) + 1;
+            break;
+          }
+        }
       }
     }
 
